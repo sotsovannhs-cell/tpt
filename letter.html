@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កម្មវិធីបង្កើតពាក្យសុំច្បាប់ - លោកគ្រូ សុត សុវណ្ណ</title>
+    <!-- ប្រើប្រាស់ Font ខ្មែរ ស្តង់ដាររដ្ឋបាល (Battambang & Moul) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    
+    <!-- បញ្ចូល Library សម្រាប់បម្លែង HTML ទៅជា រូបភាព (JPG) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --moul-font: 'Moul', 'Khmer OS Muol Light', serif;
+            --battambang-font: 'Battambang', 'Khmer OS Battambang', sans-serif;
+            --primary: #db2777;
+            --primary-hover: #be185d;
+            --success: #059669;
+            --success-hover: #047857;
+            --bg-gradient: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+            --panel-bg: rgba(255, 255, 255, 0.95);
+        }
+        
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 30px 20px;
+            font-family: var(--battambang-font);
+            color: #1f2937;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1250px;
+            margin: 0 auto;
+        }
+
+        .controls-section {
+            flex: 1;
+            min-width: 320px;
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.1);
+            border: 1px solid rgba(253, 242, 248, 0.5);
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+        }
+        .controls-title {
+            font-family: var(--moul-font);
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 25px;
+            border-bottom: 2px dashed #fbcfe8;
+            padding-bottom: 15px;
+            text-align: center;
+        }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #4b5563;
+        }
+        .hint-text { font-size: 11px; color: #db2777; font-weight: normal; font-style: italic; }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #f3f4f6;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            font-family: var(--battambang-font);
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        .btn {
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            font-family: var(--battambang-font);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .btn:active { transform: translateY(0); }
+        .btn-word { background-color: var(--primary); }
+        .btn-word:hover { background-color: var(--primary-hover); }
+        .btn-jpg { background-color: var(--success); }
+        .btn-jpg:hover { background-color: var(--success-hover); }
+        .btn-print { background-color: #4b5563; }
+        .btn-print:hover { background-color: #374151; }
+
+        .preview-section {
+            flex: 2;
+            min-width: 600px;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+        
+        .a4-page {
+            background-color: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 1cm 1cm 1cm 2cm;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            line-height: 2;
+            font-size: 13pt;
+            position: relative;
+        }
+
+        .header-section { text-align: center; margin-bottom: 5px; position: relative; }
+        .nation-religion-king { font-family: var(--moul-font); font-size: 16pt; }
+        .decorative-line { font-family: 'Arial', sans-serif; font-size: 14pt; letter-spacing: 2px; margin-top: -5px; margin-bottom: 5px; }
+        
+        .school-logo {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100px;
+            height: auto;
+        }
+
+        .document-title { font-family: var(--moul-font); font-size: 18pt; text-align: center; margin-bottom: 25px; }
+        .content-body { text-align: justify; text-justify: inter-word; }
+        .indent { padding-left: 2cm; }
+        .table-layout { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+        .table-layout td { vertical-align: top; padding-bottom: 5px; }
+        .col-label { width: 85px; font-weight: bold; }
+        
+        .signature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
+        .sig-box { text-align: center; }
+        .sig-title { font-weight: bold; margin-bottom: 80px; }
+        
+        .highlight { color: var(--primary); font-weight: bold; transition: color 0.3s; }
+
+        /* សារ Toast Message ពេល Error */
+        #toast {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-family: var(--battambang-font);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 14px;
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 4.5s;
+        }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        @media (max-width: 950px) {
+            .app-container { flex-direction: column; }
+            .controls-section { position: relative; top: 0; width: 100%; box-sizing: border-box; }
+            .preview-section { min-width: 100%; justify-content: flex-start; }
+            .a4-page { transform: scale(0.95); transform-origin: top center; margin: 0 auto; }
+        }
+        @media (max-width: 600px) {
+            .a4-page { transform: scale(0.65); transform-origin: top left; }
+        }
+
+        /* កំណត់ទម្រង់បោះពុម្ព (Print Media) */
+        @media print {
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            .controls-section, #toast, .button-group { display: none !important; }
+            .preview-section { display: block !important; margin: 0 !important; padding: 0 !important; min-width: 100% !important; }
+            .app-container { display: block !important; gap: 0 !important; margin: 0 !important; }
+            .a4-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 1cm 1cm 1cm 2cm !important;
+                width: 21cm !important;
+                height: 29.7cm !important;
+                transform: none !important;
+                border: none !important;
+                page-break-after: avoid;
+            }
+            /* ប្តូរពណ៌ Highlight ទៅជាខ្មៅដោយអូតូពេល Print */
+            .highlight { color: black !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="controls-section">
+            <div class="controls-title">📝 បញ្ចូលព័ត៌មានលិខិត</div>
+            
+            <div class="form-group">
+                <label>ឈ្មោះលោកគ្រូអ្នកគ្រូ៖</label>
+                <input type="text" id="input-name" value="សុត សុវណ្ណ" oninput="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>មុខវិជ្ជា៖</label>
+                <input type="text" id="input-subject" value="ព័ត៌មានវិទ្យា" oninput="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>ថ្នាក់ទី៖</label>
+                <input type="text" id="input-grade" value="១០" oninput="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>ចាប់ពីថ្ងៃទី៖ <span class="hint-text">(ប្តូរថ្ងៃទី ប្រព័ន្ធនឹងគណនាអូតូ)</span></label>
+                <input type="date" id="input-start-date" value="2026-05-04" onchange="autoFillDates()">
+            </div>
+            
+            <div class="form-group">
+                <label>ដល់ថ្ងៃទី៖</label>
+                <input type="date" id="input-end-date" value="2026-05-05" onchange="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>មូលហេតុ៖</label>
+                <input type="text" id="input-reason" value="មានបញ្ហាសុខភាព (មានជំងឺ)" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>ថ្ងៃខែឆ្នាំចន្ទគតិ៖ <span class="hint-text">(អាចកែដោយដៃបាន)</span></label>
+                <input type="text" id="input-lunar-date" value="ថ្ងៃអាទិត្យ ២រោច ខែពិសាខ ឆ្នាំមមី អដ្ឋស័ក ព.ស.២៥៦៩" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>ថ្ងៃធ្វើលិខិត (សុរិយគតិ)៖ <span class="hint-text">(ដក១ថ្ងៃពីថ្ងៃសុំច្បាប់)</span></label>
+                <input type="date" id="input-request-date" value="2026-05-03" onchange="updatePreview()">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-word" onclick="exportHTMLToWord()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M2 15h10"></path><path d="m9 18 3-3-3-3"></path></svg>
+                    ទាញយកជាឯកសារ Word
+                </button>
+                <button class="btn btn-jpg" onclick="exportToJPG()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    ទាញយកជារូបភាព JPG
+                </button>
+                <button class="btn btn-print" onclick="printDocument()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    បោះពុម្ព (Print)
+                </button>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div id="export-leave-request" class="a4-page">
+                <div class="header-section">
+                    <div class="nation-religion-king" style="font-size: 19pt;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="nation-religion-king">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div class="decorative-line">🙣 ✤ 🙡</div>
+                    <img src="https://z-p3-scontent.fpnh18-3.fna.fbcdn.net/v/t39.30808-6/304919117_575302914322159_6810635153387888770_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGh781EeHgZrvgSaZuKoa4BqPqjm3XkrF-o-qObdeSsX_udQ371LMJ6fLA9-9rEs7qWEU4XOwtr1J0J38X0tA5k&_nc_ohc=lNLg7N16bFsQ7kNvwH58Zze&_nc_oc=AdoVyV1Nxz-7WcyXOQnfyUdBB0-FqdKoC3TkaOzNN2I-7Ls81FlKurk5sqcseOgCtZ4&_nc_zt=23&_nc_ht=z-p3-scontent.fpnh18-3.fna&_nc_gid=m8T6zq9raIAfktWnv0_uBQ&_nc_ss=7b2a8&oh=00_Af_kwDQ27EpgecIzHb0y8jD_KoJXsdMAGk3pUvTlV4kf-A&oe=6A295F0E" alt="Logo" class="school-logo" id="school-logo">
+                </div>
+
+                <div class="document-title">លិខិតសុំច្បាប់</div>
+
+                <div class="content-body">
+                    <div style="margin-bottom: 15px;">
+                        <b>ខ្ញុំបាទ/នាងខ្ញុំឈ្មោះ</b> <span id="out-name" class="highlight">សុត សុវណ្ណ</span> ជាគ្រូបង្រៀនមុខវិជ្ជា <span id="out-subject" class="highlight">ព័ត៌មានវិទ្យា</span> ថ្នាក់ទី<span id="out-grade" class="highlight">១០</span> នៃវិទ្យាល័យ ហ៊ុន សែន ត្រពាំងត្នោត។
+                    </div>
+
+                    <div style="text-align: center; font-family: 'Moul', 'Khmer OS Muol Light', serif; margin-bottom: 15px; line-height: 1.8;">
+                        សូមគោរពជូន<br>
+                        លោក បូ ផល្លា នាយកនៃវិទ្យាល័យ ហ៊ុន សែន ត្រពាំងត្នោត។
+                    </div>
+                    
+                    <div class="indent" style="margin-bottom: 20px;">
+                        <b>តាមរយៈ ៖</b> លោកនាយករងទទួលបន្ទុក និងប្រធានក្រុមបច្ចេកទេស។
+                    </div>
+
+                    <table class="table-layout">
+                        <tr>
+                            <td class="col-label">កម្មវត្ថុ ៖</td>
+                            <td>
+                                សំណើសុំច្បាប់ឈប់សម្រាកពីការងារចំនួន <b id="out-days" class="highlight">០២ ថ្ងៃ</b> 
+                                គិតចាប់ពី <b>ថ្ងៃទី<span id="out-start-day" class="highlight">០៤</span></b> 
+                                ដល់ <b>ថ្ងៃទី<span id="out-end-day" class="highlight">០៥</span></b> 
+                                ខែ <b id="out-month" class="highlight">ឧសភា</b> 
+                                ឆ្នាំ <b id="out-year" class="highlight">២០២៦</b> ។
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-label">មូលហេតុ ៖</td>
+                            <td id="out-reason" class="highlight">មានបញ្ហាសុខភាព (មានជំងឺ)។</td>
+                        </tr>
+                    </table>
+
+                    <div style="text-indent: 1.5cm; margin-bottom: 10px;">
+                        តបតាមកម្មវត្ថុ និងមូលហេតុខាងលើ ខ្ញុំបាទ/នាងខ្ញុំសូមគោរពជម្រាបជូន លោកនាយក/លោកនាយករង មេត្តាជ្រាបថា ខ្ញុំបាទ/នាងខ្ញុំពុំអាចមកបំពេញការងារបង្រៀនសិស្សក្នុងថ្ងៃខាងលើនេះបានទេ។
+                    </div>
+                    
+                    <div style="text-indent: 1.5cm; margin-bottom: 10px;">
+                        អាស្រ័យហេតុនេះ សូម <b>លោកនាយក/លោកនាយករង</b> មេត្តាពិនិត្យ និងអនុញ្ញាតច្បាប់ឈប់សម្រាកដល់រូបខ្ញុំបាទ/នាងខ្ញុំដោយក្តីអនុគ្រោះ។
+                    </div>
+                    
+                    <div style="text-indent: 1.5cm;">
+                        សូម <b>លោកនាយក/លោកនាយករង</b> មេត្តាទទួលនូវការគោរពដ៏ខ្ពង់ខ្ពស់ពីខ្ញុំបាទ/នាងខ្ញុំ៕
+                    </div>
+                </div>
+
+                <div class="signature-grid">
+                    <div class="sig-box">
+                        <div style="visibility: hidden;">លាក់កាលបរិច្ឆេទ</div>
+                        <div class="sig-title">
+                            បានឃើញ និងឯកភាព<br>
+                            ប្រធានក្រុមបច្ចេកទេស
+                        </div>
+                    </div>
+                    
+                    <div class="sig-box">
+                        <div id="out-lunar-date" class="highlight" style="margin-bottom: 2px; white-space: nowrap; font-size: 12pt;">ថ្ងៃអាទិត្យ ២រោច ខែពិសាខ ឆ្នាំមមី អដ្ឋស័ក ព.ស.២៥៦៩</div>
+                        <div style="white-space: nowrap; font-size: 12pt;">
+                            ធ្វើនៅ ត្រពាំងត្នោត ថ្ងៃទី<span id="out-req-day" class="highlight">០៣</span> 
+                            ខែ<span id="out-req-month" class="highlight">ឧសភា</span> 
+                            ឆ្នាំ<span id="out-req-year" class="highlight">២០២៦</span>
+                        </div>
+                        <div class="sig-title" style="margin-top: 5px;">
+                            ហត្ថលេខា និងឈ្មោះសាមីខ្លួន
+                        </div>
+                        <div><b id="out-name-sig" class="highlight">សុត សុវណ្ណ</b></div>
+                    </div>
+
+                    <div class="sig-box" style="margin-top: 20px;">
+                        <div class="sig-title">
+                            បានឃើញ និងឯកភាព<br>
+                            នាយក/នាយករង
+                        </div>
+                    </div>
+
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ប្រអប់សារបង្ហាញពេលមាន Error ពេល Print -->
+    <div id="toast"></div>
+
+    <script>
+        function toKhmerNum(num) {
+            const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            return num.toString().split('').map(n => khmerNums[n] || n).join('');
+        }
+
+        function getKhmerMonth(monthIndex) {
+            const months = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+            return months[monthIndex];
+        }
+
+        function getApproximateLunarDate(dateObj) {
+            const days = ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
+            const zodiacNames = ["ជូត", "ឆ្លូវ", "ខាល", "ថោះ", "រោង", "ម្សាញ់", "មមី", "មមែ", "វក", "រកា", "ច", "កុរ"];
+            const sakNames = ["សំរឹទ្ធិស័ក", "ឯកស័ក", "ទោស័ក", "ត្រីស័ក", "ចត្វាស័ក", "បញ្ចស័ក", "ឆស័ក", "សប្តស័ក", "អដ្ឋស័ក", "នព្វស័ក"];
+            const roughLunarMonth = ["បុស្ស", "មាឃ", "ផល្គុន", "ចេត្រ", "ពិសាខ", "ជេស្ឋ", "អាសាឍ", "ស្រាពណ៍", "ភទ្របទ", "អស្សុជ", "កត្តិក", "មិគសិរ"];
+            
+            const d = new Date(dateObj);
+            const dayName = days[d.getDay()];
+            const year = d.getFullYear();
+            const month = d.getMonth(); 
+            
+            let khYear = year;
+            if (month < 3 || (month === 3 && d.getDate() < 14)) khYear = year - 1;
+            
+            const zodiac = zodiacNames[(khYear - 4) % 12];
+            const sak = sakNames[(khYear + 2) % 10];
+            
+            let beYear = year + 543;
+            if (month > 4 || (month === 4 && d.getDate() > 15)) beYear += 1;
+            
+            const newMoon = new Date('2024-01-11T00:00:00Z');
+            const diffDays = (d - newMoon) / (1000 * 60 * 60 * 24);
+            const cycle = 29.530588;
+            let age = (diffDays % cycle);
+            if (age < 0) age += cycle;
+            
+            let phaseStr = "";
+            let phaseDay = 1;
+            if (age <= 15.2) {
+                phaseDay = Math.floor(age) + 1;
+                if (phaseDay > 15) phaseDay = 15;
+                phaseStr = "កើត";
+            } else {
+                phaseDay = Math.floor(age - 14.76) + 1;
+                if (phaseDay > 15) phaseDay = 15;
+                if (phaseDay < 1) phaseDay = 1;
+                phaseStr = "រោច";
+            }
+            
+            let lMonth = roughLunarMonth[month];
+            
+            return `ថ្ងៃ${dayName} ${toKhmerNum(phaseDay)}${phaseStr} ខែ${lMonth} ឆ្នាំ${zodiac} ${sak} ព.ស.${toKhmerNum(beYear)}`;
+        }
+
+        function autoFillDates() {
+            const startDateStr = document.getElementById('input-start-date').value;
+            if(!startDateStr) return;
+            
+            const start = new Date(startDateStr);
+            const reqDate = new Date(start);
+            reqDate.setDate(reqDate.getDate() - 1);
+            
+            const yyyy = reqDate.getFullYear();
+            const mm = String(reqDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(reqDate.getDate()).padStart(2, '0');
+            document.getElementById('input-request-date').value = `${yyyy}-${mm}-${dd}`;
+            
+            const lunarStr = getApproximateLunarDate(reqDate);
+            document.getElementById('input-lunar-date').value = lunarStr;
+            
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const name = document.getElementById('input-name').value;
+            const subject = document.getElementById('input-subject').value;
+            const grade = document.getElementById('input-grade').value;
+            const startDateStr = document.getElementById('input-start-date').value;
+            const endDateStr = document.getElementById('input-end-date').value;
+            const reason = document.getElementById('input-reason').value;
+            const lunarDate = document.getElementById('input-lunar-date').value;
+            const reqDateStr = document.getElementById('input-request-date').value;
+
+            const start = new Date(startDateStr);
+            const end = new Date(endDateStr);
+            let diffTime = Math.abs(end - start);
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            if (end < start) diffDays = 0;
+
+            document.getElementById('out-name').innerText = name;
+            document.getElementById('out-name-sig').innerText = name;
+            document.getElementById('out-subject').innerText = subject;
+            document.getElementById('out-grade').innerText = grade;
+            
+            if(startDateStr && endDateStr) {
+                document.getElementById('out-days').innerText = toKhmerNum(diffDays) + " ថ្ងៃ";
+                document.getElementById('out-start-day').innerText = toKhmerNum(String(start.getDate()).padStart(2, '0'));
+                document.getElementById('out-end-day').innerText = toKhmerNum(String(end.getDate()).padStart(2, '0'));
+                document.getElementById('out-month').innerText = getKhmerMonth(start.getMonth());
+                document.getElementById('out-year').innerText = toKhmerNum(start.getFullYear());
+            }
+
+            if(reqDateStr) {
+                const req = new Date(reqDateStr);
+                document.getElementById('out-req-day').innerText = toKhmerNum(String(req.getDate()).padStart(2, '0'));
+                document.getElementById('out-req-month').innerText = getKhmerMonth(req.getMonth());
+                document.getElementById('out-req-year').innerText = toKhmerNum(req.getFullYear());
+            }
+
+            document.getElementById('out-reason').innerText = reason + "។";
+            document.getElementById('out-lunar-date').innerText = lunarDate;
+        }
+
+        function removeHighlights() {
+            const highlights = document.querySelectorAll('.highlight');
+            highlights.forEach(el => { el.style.color = '#000'; });
+            return highlights;
+        }
+
+        function restoreHighlights(highlights) {
+            highlights.forEach(el => { el.style.color = ''; });
+        }
+
+        function exportHTMLToWord() {
+            const highlights = removeHighlights();
+            
+            var content = document.getElementById('export-leave-request').innerHTML;
+            var name = document.getElementById('input-name').value.replace(/\s+/g, '_');
+            
+            var preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>Export HTML To Doc</title>
+                <style>
+                    @page WordSection1 {
+                        size: 595.3pt 841.9pt; /* A4 */
+                        margin: 0.39in 0.39in 0.39in 0.79in; /* 1cm top/right/bottom, 2cm left */
+                        mso-header-margin: 0.39in;
+                        mso-footer-margin: 0.39in;
+                        mso-paper-source: 0;
+                    }
+                    div.WordSection1 { page: WordSection1; }
+                    body { font-family: 'Khmer OS Battambang', 'Battambang', sans-serif; font-size: 12pt; line-height: 1.5; color: black; }
+                    .moul { font-family: 'Khmer OS Muol Light', 'Moul', serif; }
+                    .header-section { position: relative; text-align: center; margin-bottom: 5px; }
+                    .school-logo { position: absolute; left: 0; top: 70px; width: 100px; height: 100px; }
+                    .nation-religion-king { font-family: 'Khmer OS Muol Light', 'Moul', serif; text-align: center; font-size: 16pt; }
+                    .decorative-line { text-align: center; margin-bottom: 5px; }
+                    .document-title { font-family: 'Khmer OS Muol Light', 'Moul', serif; text-align: center; font-size: 18pt; margin-bottom: 20px; }
+                    table { width: 100%; }
+                    td { vertical-align: top; padding-bottom: 5px; }
+                    .signature-grid { width: 100%; margin-top: 30px; }
+                    .sig-col { width: 50%; display: inline-block; text-align: center; vertical-align: top; margin-bottom: 30px; }
+                </style>
+            </head><body><div class="WordSection1">`;
+            
+            let modifiedContent = content.replace(
+                /<div class="signature-grid">[\s\S]*$/,
+                `<table class="signature-grid">
+                    <tr>
+                        <td class="sig-col" style="visibility:hidden;">ធ្វើនៅ ត្រពាំងត្នោត<br></td>
+                        <td class="sig-col" style="font-size: 12pt;"><span style="white-space: nowrap;">${document.getElementById('out-lunar-date').innerText}</span><br><span style="white-space: nowrap;">ធ្វើនៅ ត្រពាំងត្នោត ថ្ងៃទី${document.getElementById('out-req-day').innerText} ខែ${document.getElementById('out-req-month').innerText} ឆ្នាំ${document.getElementById('out-req-year').innerText}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="sig-col"><b>បានឃើញ និងឯកភាព<br>ប្រធានក្រុមបច្ចេកទេស</b><br><br><br><br><br></td>
+                        <td class="sig-col"><b>ហត្ថលេខា និងឈ្មោះសាមីខ្លួន</b><br><br><br><br><br><b>${document.getElementById('out-name').innerText}</b></td>
+                    </tr>
+                    <tr>
+                        <td class="sig-col"><b>បានឃើញ និងឯកភាព<br>នាយក/នាយករង</b><br><br><br><br><br></td>
+                        <td class="sig-col"></td>
+                    </tr>
+                </table>`
+            );
+
+            var html = preHtml + modifiedContent + "</div></body></html>";
+            var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            var filename = 'ពាក្យសុំច្បាប់_' + name + '.doc';
+            
+            var downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            
+            if (navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(blob, filename);
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = filename;
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+            
+            restoreHighlights(highlights);
+        }
+
+        function exportToJPG() {
+            const highlights = removeHighlights();
+            const element = document.getElementById('export-leave-request');
+            var name = document.getElementById('input-name').value.replace(/\s+/g, '_');
+            
+            html2canvas(element, { scale: 4, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'ពាក្យសុំច្បាប់_' + name + '.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+                
+                restoreHighlights(highlights);
+            });
+        }
+        
+        // មុខងារបង្ហាញសារ Toast បើមានបញ្ហា
+        function showToast(message) {
+            var toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 5000);
+        }
+
+        // អនុគមន៍សម្រាប់បោះពុម្ព
+        function printDocument() {
+            try {
+                // ហៅមុខងារ Print ភ្លាមៗ (Synchronous)
+                window.print();
+            } catch (err) {
+                // បង្ហាញសារបញ្ជាក់ប្រសិនបើ Browser រាំងខ្ទប់
+                showToast("⚠️ មុខងារ Print ត្រូវបានបិទដោយប្រព័ន្ធ Browser ។ សូមទាញយកជា Word រួច Print ជំនួសវិញ។");
+            }
+        }
+        
+        window.onload = autoFillDates;
+
+    </script>
+</body>
+</html>
